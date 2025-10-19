@@ -1,3 +1,10 @@
+'''
+*******************************
+Author: Group 43 (Tuesday 1:30 - 3:30)
+Assessment 3 - 10/14/2025
+File Name: task_2_course_capacity.py
+*******************************
+'''   
 import csv
 from tabulate import tabulate 
 class Student:
