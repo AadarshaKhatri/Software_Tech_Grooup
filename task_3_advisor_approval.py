@@ -1,3 +1,10 @@
+'''
+*******************************
+Author: Group 43 (Tuesday 1:30 - 3:30)
+Assessment 3 - 10/15/2025
+File Name: task_3_advisor_approval.py
+*******************************
+'''   
 import csv
 from tabulate import tabulate 
 
