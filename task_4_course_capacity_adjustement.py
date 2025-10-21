@@ -129,8 +129,10 @@ class Course:
       # Taking Random List of elements | Ref for Sample Method : https://www.geeksforgeeks.org/python/python-random-sample-function
       random_students : list[Student] = random.sample(self.__enrolled_students,int(total_removal))
 
+      #Displaced students can also be re-enrolled
       for student in random_students:
         self.__enrolled_students.remove(student)
+        student.drop_course(self)
 
       # Adding each students individually as a list
       self.__displaced_students.extend(random_students)
@@ -332,7 +334,7 @@ def main() :
 
           # Validating if the course is found or not
           if not found_course:
-              print(f'Course "{course_choice}" not found. Try again')
+              print(f'"{course_choice}" not found. Try again')
               continue
         
 
@@ -354,11 +356,12 @@ def main() :
                 break
           # Validating if the student is found or not
           if not found_student:
-            print(f'Student "{student_choice}" not found. Try Again')
+            print(f'"{student_choice}" not found. Try Again')
             continue
           
           # Checking if the student is already enrolled in the course
           if not found_student.can_enroll(found_course):
+            print(f"Student {found_student.name} is already enrolled in {found_course.name}")
             print(f"Failure! {found_student.name} NOT enrolled in course {found_course.name}")
             continue
                   
@@ -547,8 +550,8 @@ def main() :
           for course in courses:
             students_names = ", ".join([student.name for student in course.enrolled_students]) or "None"
             all_course.append({
-               "Course Name":course.name,
                "Course Code":course.code,
+                "Course Name":course.name,
                "Max Capacity":course.max_capacity,
                "Enrolled Students":len(course.enrolled_students),
                "Students Name":students_names
@@ -575,7 +578,7 @@ def main() :
                 
               # Validating if the Advisor not found
               if not found_advisor:
-                print(f"No advisor found with the name {advisor_input}")
+                print(f"No advisor found with the name {advisor_input}.")
                 continue
 
               print(f"Welcome, {found_advisor.name}. Here are your pending requests:")
@@ -585,17 +588,17 @@ def main() :
 
                 # Showing all pending request
                 for index,(student,course) in enumerate(found_advisor.pending_request):
+                    print(f"{index+1}. Student {student.name} requests to enroll in {course.name}.")
 
-                    while True:
+                while True:
 
-                      print(f"{index+1}. Student {student.name} requests to enroll in {course.name}.")
                       
                       # User Input
                       answer = input("Would you like to approve or deny the request? (a=approve, d=deny, q=quit): ")
                       
                       # Validating input
                       if answer not in ["a","d","q"]:
-                        print("Invalid input. Please enter 'a', 'd', or 'q'.\n")
+                        print("Invalid input. Please enter 'a' to approve, 'd' to deny, or 'q' to quit.\n")
                         continue
                       
                       # For Approval
@@ -632,7 +635,7 @@ def main() :
 
                           # Validating if its denied
                           if found_advisor.deny_request(student=student,course=course,index=int(confirm_input-1)):
-                            print(f"Request denied. {student.name} is NOT enrolled in {course.name}.")
+                            print(f"Request denied for {student.name}.")
                             break
 
                         else:
@@ -641,7 +644,7 @@ def main() :
                       
                       # For exiting the advisor menu
                       elif answer.lower() == "q":
-                          print("Exiting advisor menu")
+                          print("Exiting advisor menu.")
                           break
               else:
                     print("    No Pending Requests")
@@ -676,26 +679,51 @@ def main() :
             # Calling the Adjust Method
             found_course.adjust_capcity(int(new_capcity_input))  
 
-            # Getting the list of displaced student
-            displaced_students : Student = found_course.get_displaced_students()
+            # Getting the list of displaced students
+            displaced_students: list[Student] = found_course.get_displaced_students()
 
-            for student in displaced_students:
-              reassignment = False
-              for course in courses:
+            # Only run reassignment if students were actually displaced (capacity DECREASED)
+            if len(displaced_students) > 0:
+                successes = []   # list of tuples (student, new_course)
+                failures = []    # list of students not reassigned
 
-                # Validating if students don't enroll in the same course
-                if course is not found_course and len(course.enrolled_students) < course.max_capacity:
+                for student in displaced_students:
+                    reassignment = False
+                    for course in courses:
+                        # Skip same course and check available capacity
+                        if course is not found_course and len(course.enrolled_students) < course.max_capacity:
+                            # Avoid double-enrolling the student in the same course
+                            if student in course.enrolled_students:
+                                continue
 
-                  # Same as Code for Enrollement
+                            # Enroll student in the new course
+                            course.add_students(student)
 
-                  course.add_students(student)
-                  student.enrolled_courses.append(found_course)
-                  print(f"Studnet {student.name} reassgined from {found_course.name} to {course.name}")
-                  reassignment = True
-                  break
-              
-              if not reassignment:
-                print(f"Warning: No Available spots for student {student.name}. They will remain unassigned for now.")
+                            # Record enrollment on student's side only if not already present
+                            if course not in student.enrolled_courses:
+                                student.enrolled_courses.append(course)
+
+                            successes.append((student, course))
+                            reassignment = True
+                            break
+
+                    if not reassignment:
+                        failures.append(student)
+
+                # Print all successful reassignments first
+                for student, course in successes:
+                    print(f"Student {student.name} reassigned from {found_course.name} to {course.name}")
+
+                # Then print one warning per student who could not be reassigned
+                for student in failures:
+                    print(f"Warning: No Available spots for student {student.name}. They will remain unassigned for now.")
+
+                # Once done, clear the displaced list
+                found_course.clear_displaced_students()
+
+            else:
+                # When capacity increases, no reassignment needed
+                print(f"No students were displaced during capacity adjustment for {found_course.name}.")
 
 
       elif user_choice == 0:

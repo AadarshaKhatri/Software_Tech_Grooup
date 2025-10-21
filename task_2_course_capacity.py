@@ -115,7 +115,7 @@ class Course:
 
 
 def main() :
-    '''Main Function displat the students and classes'''
+    '''Main Function display the students and classes'''
 
     # Storing the Students and Courses
     students = []
@@ -230,9 +230,14 @@ def main() :
           
           # Checking if the student is already enrolled in the course
           if not found_student.can_enroll(found_course):
-            print(f"Failure! {found_student.name} NOT enrolled in course {found_course.name}")
+            if len(found_student.enrolled_courses) >= Student.MAX_COURSES:
+              print(f"Student {found_student.name} cannot enroll in more than {Student.MAX_COURSES} courses.")
+            elif found_course in found_student.enrolled_courses:
+              print(f"Failure! {found_student.name} is already enrolled in {found_course.name}.")
+            else:
+              print(f"Failure! {found_student.name} NOT enrolled in course {found_course.name}.")
             continue
-          
+        
           # Adding Students to the course
           found_course.add_students(found_student)
 
@@ -306,7 +311,7 @@ def main() :
 
         while not found_course:
           # User Input
-          course_choice = input("Enter the name of the course you want to re-enrol: ")
+          course_choice = input("Enter the name of the course: ")
 
           # Validating if its a string
           if course_choice.isdigit():
@@ -353,6 +358,7 @@ def main() :
           
           # Checking if the student is already enrolled in the course
           if not found_student.can_enroll(found_course):
+            print(f"Student {found_student.name} is already enrolled in {found_course.name}")
             print(f"Failure! {found_student.name} NOT enrolled in course {found_course.name}")
             continue
           
@@ -405,8 +411,8 @@ def main() :
           for course in courses:
             students_names = ", ".join([student.name for student in course.enrolled_students]) or "None"
             all_course.append({
-               "Course Name":course.name,
                "Course Code":course.code,
+               "Course Name":course.name,
                "Max Capacity":course.max_capacity,
                "Enrolled Students":len(course.enrolled_students),
                "Students Name":students_names

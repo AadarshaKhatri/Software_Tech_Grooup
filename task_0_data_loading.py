@@ -91,8 +91,16 @@ def main() :
                 enrolled_courses=[]
             )
             students.append(student)
-    students_sorted = sorted(students, key=lambda s: s.name.lower())
-   
+
+    #sorting first postgraduate and undergraduate
+    postgraduates = [s for s in students if s.type.lower() == "postgraduate"]
+    undergraduates = [s for s in students if s.type.lower() == "undergraduate"]
+
+    #sorting undergraduate students name in ascending order
+    undergraduates.sort(key=lambda s: s.name.lower())
+
+    sorted_students = postgraduates + undergraduates
+
 
     # Loading Courses from the csv file
     with open("courses.csv", newline="") as csvfile:
@@ -110,7 +118,7 @@ def main() :
     print(f"Initalized {len(students)} students including {len(courses)} courses.")
 
     print("\nStudents:")
-    for student in students_sorted:
+    for student in sorted_students:
       print(student)
     
     print("\nCourses:")

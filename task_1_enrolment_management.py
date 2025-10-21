@@ -182,7 +182,7 @@ def main() :
 
           # Validating if the course is found or not
           if not found_course:
-              print(f'Course "{course_choice}" not found. Try again')
+              print(f'"{course_choice}" not found. Try again')
               continue
         
 
@@ -204,12 +204,13 @@ def main() :
                 break
           # Validating if the student is found or not
           if not found_student:
-            print(f'Student "{student_choice}" not found. Try Again')
+            print(f'"{student_choice}" not found. Try Again')
             continue
           
           # Checking if the student is already enrolled in the course
           if not found_student.can_enroll(found_course):
-            print(f"Failure! {found_student.name} NOT enrolled in course {found_course.name}")
+            print(f"Student {found_student.name} is already enrolled in {found_course.name}")
+            print(f'Failure! Student "{found_student.name}" NOT enrolled in course "{found_course.name}"')
             continue
           
           # Adding Students to the course
@@ -261,8 +262,8 @@ def main() :
           for course in courses:
             students_names = ", ".join([student.name for student in course.enrolled_students]) or "None"
             all_course.append({
-               "Course Name":course.name,
                "Course Code":course.code,
+               "Course Name":course.name,
                "Max Capacity":course.max_capacity,
                "Enrolled Students":len(course.enrolled_students),
                "Students Name":students_names
